@@ -91,11 +91,11 @@ pub trait Markdown: Display {
 	}
 
     /// Creates a codeblock with the provided language of the text.
-	fn codeblock_with(self, lang: String) -> Codeblock<Self>
+	fn codeblock_with<Lang: Display>(self, lang: Lang) -> CodeblockWith<Self, Lang>
 	where
 		Self: Sized,
 	{
-		Codeblock::with_lang(self, lang)
+		CodeblockWith::new(self, lang)
 	}
 
     /// Creates an inline codeblock of the text.
@@ -108,3 +108,55 @@ pub trait Markdown: Display {
 }
 
 impl<T: Display> Markdown for T {}
+
+#[cfg(test)]
+mod tests {
+	use super::Markdown;
+
+	#[test]
+	fn bold() {
+		assert_eq!("hey there".bold().to_string(), "**hey there**");
+	}
+
+	#[test]
+	fn italic() {
+		assert_eq!("hey there".italic().to_string(), "_hey there_");
+	}
+
+	#[test]
+	fn underscore() {
+		assert_eq!("hey there".underscore().to_string(), "__hey there__");
+	}
+
+	#[test]
+	fn strikethrough() {
+		assert_eq!("hey there".strikethrough().to_string(), "~~hey there~~");
+	}
+
+	#[test]
+	fn quote() {
+		assert_eq!("hey there".quote().to_string(), "> hey there");
+	}
+
+	#[test]
+	fn block_quote() {
+		assert_eq!("hey there".block_quote().to_string(), ">>> hey there");
+	}
+
+	#[test]
+	fn spoiler() {
+		assert_eq!("hey there".spoiler().to_string(), "||hey there||");
+	}
+
+	#[test]
+	fn codeblocks() {
+		assert_eq!("hey there".codeblock().to_string(), "```\nhey there```");
+
+		assert_eq!("hey there".codeblock_with("rs").to_string(), "```rs\nhey there```");
+	}
+
+	#[test]
+	fn inline_codeblock() {
+		assert_eq!("hey there".inline_codeblock().to_string(), "`hey there`");
+	}
+}

@@ -60,6 +60,7 @@ impl<T: Display> Display for Underscore<T> {
 	}
 }
 
+/// Strikethrough text formatter.
 #[derive(Debug, Clone)]
 #[repr(transparent)]
 #[must_use = "markdown formatters are lazy and must be used"]
@@ -79,6 +80,7 @@ impl<T: Display> Display for Strikethrough<T> {
 	}
 }
 
+/// Quote formatter.
 #[derive(Debug, Clone)]
 #[repr(transparent)]
 #[must_use = "markdown formatters are lazy and must be used"]
@@ -97,6 +99,7 @@ impl<T: Display> Display for Quote<T> {
 	}
 }
 
+/// Block quote formatter
 #[derive(Debug, Clone)]
 #[repr(transparent)]
 #[must_use = "markdown formatters are lazy and must be used"]
@@ -115,6 +118,7 @@ impl<T: Display> Display for BlockQuote<T> {
 	}
 }
 
+/// Spoiler formatter.
 #[derive(Debug, Clone)]
 #[repr(transparent)]
 #[must_use = "markdown formatters are lazy and must be used"]
@@ -134,32 +138,48 @@ impl<T: Display> Display for Spoiler<T> {
 	}
 }
 
+/// Multi-line code block formatter.
 #[derive(Debug, Clone)]
+#[repr(transparent)]
 #[must_use = "markdown formatters are lazy and must be used"]
-pub struct Codeblock<T>(pub(super) T, Option<String>);
+pub struct Codeblock<T>(pub(super) T);
 
 impl<T> Codeblock<T> {
 	pub(super) const fn new(value: T) -> Self {
-		Self(value, None)
-	}
-
-	pub(super) const fn with_lang(value: T, lang: String) -> Self {
-		Self(value, Some(lang))
+		Self(value)
 	}
 }
 
 impl<T: Display> Display for Codeblock<T> {
 	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-		let lang = self.1.as_deref().unwrap_or_default();
+		f.write_str("```\n")?;
+		Display::fmt(&self.0, f)?;
+		f.write_str("```")
+	}
+}
 
+/// Multi-line code block formatter with language.
+#[derive(Debug, Clone)]
+#[must_use = "markdown formatters are lazy and must be used"]
+pub struct CodeblockWith<T, Lang>(pub(super) T, pub(super) Lang);
+
+impl<T, Lang> CodeblockWith<T, Lang> {
+	pub (super) const fn new(value: T, lang: Lang) -> Self {
+		Self(value, lang)
+	}
+}
+
+impl<T: Display, Lang: Display> Display for CodeblockWith<T, Lang> {
+	fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
 		f.write_str("```")?;
-		Display::fmt(lang, f)?;
+		Display::fmt(&self.1, f)?;
 		f.write_char('\n')?;
 		Display::fmt(&self.0, f)?;
 		f.write_str("```")
 	}
 }
 
+/// Inline code block formatter
 #[derive(Debug, Clone)]
 #[repr(transparent)]
 #[must_use = "markdown formatters are lazy and must be used"]
